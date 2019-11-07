@@ -1,6 +1,6 @@
 {
-  "name": "my_gulp",
-  "version": "1.0.0",
+  "name": "gulp-build-scss",
+  "version": "4.0.1",
   "description": "",
   "main": "index.js",
   "dependencies": {},
