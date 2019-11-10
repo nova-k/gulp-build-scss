@@ -7,7 +7,7 @@ const autoprefixer = require('gulp-autoprefixer');
 //Оптимизация стилей
 const cleanCSS = require('gulp-clean-css');
 //Оптимизация скриптов
-const uglify = require('gulp-uglify');
+const uglify = require('gulp-uglify-es').default;
 //Удаление файлов
 const del = require('del');
 //Синхронизация с браузером
@@ -39,7 +39,7 @@ gulp.task('styles', () => {
 			includePaths: require('node-normalize-scss').includePaths
 		}))
 		//Объединение файлов в один
-		.pipe(concat('index.css'))
+		.pipe(concat('style.min.css'))
 		//Добавить префиксы
 		.pipe(autoprefixer({
 			cascade: false
@@ -60,11 +60,12 @@ gulp.task('scripts', () => {
 	//Всей файлы по шаблону './src/js/**/*.js'
 	return gulp.src(scriptFiles)
 		//Объединение файлов в один
-		.pipe(concat('index.js'))
+		.pipe(concat('script.min.js'))
+		.pipe(sourcemaps.init())
 		//Минимизация JS
-		.pipe(uglify({
-			toplevel: true
-		}))
+		.pipe(uglify())
+		//Source maps
+		.pipe(sourcemaps.write('./'))
 		//Выходная папка для скриптов
 		.pipe(gulp.dest('./build/js'))
 		.pipe(browserSync.stream());
@@ -77,11 +78,11 @@ gulp.task('del', () => {
 
 //
 gulp.task('img-compress', () => {
-	return gulp.src('./src/images/**')
+	return gulp.src('./src/img/**')
 		.pipe(imagemin({
 			progressive: true
 		}))
-		.pipe(gulp.dest('./build/images'))
+		.pipe(gulp.dest('./build/img'))
 });
 
 //Таск для отслеживания изменений в файлах
@@ -92,7 +93,7 @@ gulp.task('watch', () => {
 		}
 	});
 	//Следить за картинками
-	gulp.watch('./src/images/**', gulp.series('img-compress'))
+	gulp.watch('./src/img/**', gulp.series('img-compress'))
 	//Следить за файлами со стилями с нужным расширением
 	gulp.watch('./src/scss/**/*.scss', gulp.series('styles'))
 	//Следить за JS файлами
