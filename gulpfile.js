@@ -1,25 +1,29 @@
-//Подключаем gulp
-const gulp = require('gulp');
-//Объединение файлов
-const concat = require('gulp-concat');
-//Добавление префиксов
-const autoprefixer = require('gulp-autoprefixer');
-//Оптимизация стилей
-const cleanCSS = require('gulp-clean-css');
-//Оптимизация скриптов
-const uglify = require('gulp-uglify-es').default;
-//Удаление файлов
-const del = require('del');
-//Синхронизация с браузером
-const browserSync = require('browser-sync').create();
-//Для препроцессоров стилей
-const sourcemaps = require('gulp-sourcemaps');
-//Sass препроцессор
-const sass = require('gulp-sass');
-//Оптимизация картинок
-const imagemin = require('gulp-imagemin');
-//Оптимизация HTML
-const htmlmin = require('gulp-htmlmin');
+const gulp = require('gulp'),
+	//Объединение файлов
+	concat = require('gulp-concat'),
+	//Добавление префиксов
+	autoprefixer = require('gulp-autoprefixer'),
+	//Оптимизация стилей
+	cleanCSS = require('gulp-clean-css'),
+	//Оптимизация скриптов
+	uglify = require('gulp-uglify-es').default,
+	//Удаление файлов
+	del = require('del'),
+	//Синхронизация с браузером
+	browserSync = require('browser-sync').create(),
+	//Для препроцессоров стилей
+	sourcemaps = require('gulp-sourcemaps'),
+	//Sass препроцессор
+	sass = require('gulp-sass'),
+	//Оптимизация картинок
+	imagemin = require('gulp-imagemin'),
+	//Оптимизация HTML
+	htmlmin = require('gulp-htmlmin'),
+	// Работа с svg
+	cheerio = require('gulp-cheerio'),
+	replace = require('gulp-replace'),
+	svgSprite = require('gulp-svg-sprite'),
+	svgmin = require('gulp-svgmin');
 
 //Порядок подключения файлов со стилями
 const styleFiles = [
@@ -52,10 +56,10 @@ gulp.task('styles', () => {
 		//Добавить префиксы
 		.pipe(autoprefixer())
 		//Минимизация CSS
-		.pipe(cleanCSS({compatibility: 'ie8'}))
+		.pipe(cleanCSS({ compatibility: 'ie8' }))
 		.pipe(sourcemaps.write('./'))
 		//Выходная папка для стилей
-		.pipe(gulp.dest('./build/css'))
+		.pipe(gulp.dest('./build/css/'))
 		.pipe(browserSync.stream());
 });
 
@@ -87,7 +91,34 @@ gulp.task('img-compress', () => {
 		.pipe(imagemin({
 			progressive: true
 		}))
-		.pipe(gulp.dest('./build/images'))
+		.pipe(gulp.dest('./build/images/'))
+});
+
+//Task для svg
+gulp.task('svg', () => {
+	return gulp.src('./src/images/svg/*.svg')
+		.pipe(svgmin({
+			js2svg: {
+				pretty: true
+			}
+		}))
+		.pipe(cheerio({
+			run: function ($) {
+				$('[fill]').removeAttr('fill');
+				$('[stroke]').removeAttr('stroke');
+				$('[style]').removeAttr('style');
+			},
+			parserOptions: { xmlMode: true }
+		}))
+		.pipe(replace('&gt;', '>'))
+		.pipe(svgSprite({
+			mode: {
+				symbol: {
+					sprite: 'sprite.svg'
+				}
+			}
+		}))
+		.pipe(gulp.dest('./build/images/svg/'))
 });
 
 //Task для отслеживания изменений в файлах
@@ -100,6 +131,8 @@ gulp.task('watch', () => {
 	gulp.watch("./src/*.html").on('change', browserSync.reload);
 	//Следить за картинками
 	gulp.watch('./src/images/**', gulp.parallel('img-compress'))
+	//Следить за svg
+	gulp.watch('./src/images/svg/*.svg', gulp.parallel('svg'))
 	//Следить за файлами со стилями с нужным расширением
 	gulp.watch('./src/sass/**/*.+(scss|sass|css)', gulp.parallel('styles'))
 	//Следить за JS файлами
@@ -109,4 +142,4 @@ gulp.task('watch', () => {
 });
 
 //Task по умолчанию, Запускает del, html, styles, scripts, img-compress и watch
-gulp.task('default', gulp.series('del', gulp.parallel('html', 'styles', 'scripts', 'img-compress'), 'watch'));
+gulp.task('default', gulp.series('del', gulp.parallel('html', 'styles', 'scripts', 'img-compress', 'svg'), 'watch'));
