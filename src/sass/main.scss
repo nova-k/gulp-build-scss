@@ -2,17 +2,22 @@
 ======================= */
 @import "normalize";
 
-/* Utils
+/* Libs
 ======================= */
-@import "./utils/config";
+// @import "./libs/bootstrap-reboot.min.scss";
+@import "./libs/bootstrap-grid.min.scss";
+// @import "./libs/bootstrap.min.scss";
 
-/* Fonts
+/* Config
 ======================= */
-@import "./fonts/fonts";
+@import "./config/config";
 
 /* Colors
 ======================= */
 @import "./colors/colors";
+
+/* Helpers
+======================= */
 
 /* Components
 ======================= */
@@ -26,6 +31,3 @@
 @import "./layout/header";
 @import "./layout/navigation";
 @import "./layout/footer";
-
-/* Helpers
-======================= */

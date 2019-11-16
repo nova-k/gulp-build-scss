@@ -1,4 +1,4 @@
-//Подключаем галп
+//Подключаем gulp
 const gulp = require('gulp');
 //Объединение файлов
 const concat = require('gulp-concat');
@@ -18,17 +18,26 @@ const sourcemaps = require('gulp-sourcemaps');
 const sass = require('gulp-sass');
 //Оптимизация картинок
 const imagemin = require('gulp-imagemin');
+//Оптимизация HTML
+const htmlmin = require('gulp-htmlmin');
 
 //Порядок подключения файлов со стилями
 const styleFiles = [
-	'./src/scss/main.scss'
-]
+	'./src/sass/main.+(scss|sass)'
+];
 //Порядок подключения js файлов
 const scriptFiles = [
 	'./src/js/main.js'
-]
+];
 
-//Таск для обработки стилей
+//Task для обработки HTML
+gulp.task('html', () => {
+	return gulp.src('src/*.html')
+		.pipe(htmlmin({ collapseWhitespace: true }))
+		.pipe(gulp.dest('build/'));
+});
+
+//Task для обработки стилей
 gulp.task('styles', () => {
 	//Шаблон для поиска файлов CSS
 	//Всей файлы по шаблону './src/css/**/*.css'
@@ -41,20 +50,16 @@ gulp.task('styles', () => {
 		//Объединение файлов в один
 		.pipe(concat('style.min.css'))
 		//Добавить префиксы
-		.pipe(autoprefixer({
-			cascade: false
-		}))
+		.pipe(autoprefixer())
 		//Минимизация CSS
-		.pipe(cleanCSS({
-			level: 2
-		}))
+		.pipe(cleanCSS({compatibility: 'ie8'}))
 		.pipe(sourcemaps.write('./'))
 		//Выходная папка для стилей
 		.pipe(gulp.dest('./build/css'))
 		.pipe(browserSync.stream());
 });
 
-//Таск для обработки скриптов
+//Task для обработки скриптов
 gulp.task('scripts', () => {
 	//Шаблон для поиска файлов JS
 	//Всей файлы по шаблону './src/js/**/*.js'
@@ -71,36 +76,37 @@ gulp.task('scripts', () => {
 		.pipe(browserSync.stream());
 });
 
-//Таск для очистки папки build
+//Task для очистки папки build
 gulp.task('del', () => {
 	return del(['build/*'])
 });
 
-//
+//Task для сжатия images
 gulp.task('img-compress', () => {
-	return gulp.src('./src/img/**')
+	return gulp.src('./src/images/+(icon|img)')
 		.pipe(imagemin({
 			progressive: true
 		}))
-		.pipe(gulp.dest('./build/img'))
+		.pipe(gulp.dest('./build/images'))
 });
 
-//Таск для отслеживания изменений в файлах
+//Task для отслеживания изменений в файлах
 gulp.task('watch', () => {
 	browserSync.init({
 		server: {
-			baseDir: "./"
+			baseDir: "build"
 		}
 	});
+	gulp.watch("./src/*.html").on('change', browserSync.reload);
 	//Следить за картинками
-	gulp.watch('./src/img/**', gulp.series('img-compress'))
+	gulp.watch('./src/images/**', gulp.parallel('img-compress'))
 	//Следить за файлами со стилями с нужным расширением
-	gulp.watch('./src/scss/**/*.scss', gulp.series('styles'))
+	gulp.watch('./src/sass/**/*.+(scss|sass|css)', gulp.parallel('styles'))
 	//Следить за JS файлами
-	gulp.watch('./src/js/**/*.js', gulp.series('scripts'))
+	gulp.watch('./src/js/**/*.js', gulp.parallel('scripts'))
 	//При изменении HTML запустить синхронизацию
-	gulp.watch("./*.html").on('change', browserSync.reload);
+	gulp.watch("./src/*.html").on('change', gulp.parallel('html'));
 });
 
-//Таск по умолчанию, Запускает del, styles, scripts и watch
-gulp.task('default', gulp.series('del', gulp.parallel('styles', 'scripts', 'img-compress'), 'watch'));
+//Task по умолчанию, Запускает del, html, styles, scripts, img-compress и watch
+gulp.task('default', gulp.series('del', gulp.parallel('html', 'styles', 'scripts', 'img-compress'), 'watch'));
