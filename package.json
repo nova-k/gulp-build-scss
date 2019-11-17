@@ -3,7 +3,9 @@
   "version": "4.0.1",
   "description": "",
   "main": "index.js",
-  "dependencies": {},
+  "dependencies": {
+    "svg4everybody": "^2.1.9"
+  },
   "devDependencies": {
     "browser-sync": "^2.26.3",
     "del": "^3.0.0",

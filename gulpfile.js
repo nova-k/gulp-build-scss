@@ -31,6 +31,10 @@ const styleFiles = [
 ];
 //Порядок подключения js файлов
 const scriptFiles = [
+	'./src/js/libs/jquery-3.3.1.slim.min.js',
+	'./src/js/libs/popper.min.js',
+	'./src/js/libs/bootstrap.min.js',
+	'./src/js/libs/svg4everybody.js',
 	'./src/js/main.js'
 ];
 

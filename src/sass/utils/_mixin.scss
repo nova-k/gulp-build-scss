@@ -1,0 +1,9 @@
+@mixin svgSize() {
+	display: inline-block;
+	width: 18px;
+	height: 18px;
+	fill: $blue;
+}
+// <svg class="name">
+// 		<use xlink:href="images/svg/symbol/sprite.svg#name"/>
+// 	</svg>
